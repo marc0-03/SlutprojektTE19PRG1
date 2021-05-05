@@ -41,13 +41,11 @@ public class GAME extends Canvas implements Runnable {
 
     public void update() {
 
-        if (platformspeed!=0) {
-            if (platformspeed==-2 || platformx>200){
-                platformspeed =+ (platformspeed*speedmodifier);
-            } else if (platformspeed==2 || (platformx+(platformsize*2))<1100) {
-                platformx =+ platformspeed+(platformspeed*speedmodifier);
+            if (platformspeed < 0 && platformx > 200){
+                platformx += (platformspeed*speedmodifier);
+            } else if (platformspeed > 0 && (platformx+(platformsize*2))<1080) {
+                platformx += (platformspeed*speedmodifier);
             }
-        }
 
     }
 
@@ -117,13 +115,13 @@ public class GAME extends Canvas implements Runnable {
         public void keyTyped(KeyEvent e) {
             if (e.getKeyChar() == 'a' || e.getKeyChar() == 'A') {
                 if (a) {
-                    platformspeed+=-2;
+                    platformspeed+=-4;
                     a=false;
                 }
             }
             if (e.getKeyChar() == 'd' || e.getKeyChar() == 'd') {
                 if (d) {
-                    platformspeed+=2;
+                    platformspeed+=4;
                     d=false;
                 }
             }
@@ -137,16 +135,12 @@ public class GAME extends Canvas implements Runnable {
         @Override
         public void keyReleased(KeyEvent e) {
             if (e.getKeyChar() == 'a' || e.getKeyChar() == 'A') {
-                if (!a) {
-                    platformspeed+=2;
+                    platformspeed+=4;
                     a=true;
-                }
             }
             if (e.getKeyChar() == 'd' || e.getKeyChar() == 'd') {
-                if (!d) {
-                    platformspeed+=-2;
+                    platformspeed+=-4;
                     d=true;
-                }
             }
         }
     }
