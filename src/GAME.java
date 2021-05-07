@@ -3,6 +3,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Created 2021-04-27
@@ -18,8 +20,17 @@ public class GAME extends Canvas implements Runnable {
 
     private BufferStrategy bs;
 
-    private int platformx, platformsize, platformspeed, speedmodifier;
+    private int platformx, platformsize, platformspeed;
+    double speedmodifier;
     private boolean a,d;
+    private double Angle;
+
+    private int balllost, i;
+    private Collection<int> Brickx = new ArrayList<>();
+
+    private double ballx, bally, ballxV, ballyV, R;
+
+
     public GAME() {
         JFrame frame = new JFrame("Breakout");
         this.setSize(1980,650);
@@ -32,8 +43,20 @@ public class GAME extends Canvas implements Runnable {
         a=true;
         d=true;
 
-        platformspeed=0;
-        speedmodifier=1;
+        ballx = 700;
+        bally = 590;
+
+        R=Math.sqrt(30);
+
+        Angle = Math.toRadians((Math.random()*50)+25);
+
+        ballyV = -1*(R*Math.sin(Angle));
+        ballxV = (R*Math.cos(Angle));
+
+
+
+        platformspeed = 0;
+        speedmodifier = 1;
         platformsize = 25;
         platformx = ((1366/2)-platformsize);
     }
@@ -41,12 +64,69 @@ public class GAME extends Canvas implements Runnable {
 
     public void update() {
 
+
+
+
             if (platformspeed < 0 && platformx > 200){
                 platformx += (platformspeed*speedmodifier);
             } else if (platformspeed > 0 && (platformx+(platformsize*2))<1080) {
                 platformx += (platformspeed*speedmodifier);
             }
 
+            ballx += ballxV;
+            bally += ballyV;
+
+            if (ballx < 200) {
+                ballxV = ballxV*-1;
+            } else if (ballx > 1070) {
+                ballxV = ballxV*-1;
+            }
+            if (bally < 5) {
+                ballyV = ballyV*-1;
+            }
+
+            Rectangle rect1 = new Rectangle((int)ballx, (int)bally, 10, 10);
+        Rectangle rect2 = new Rectangle(platformx, 625, platformsize*2, 10);
+
+        if (rect1.intersects(rect2)) {
+            Angle = Math.toRadians((Math.random()*50)+25);
+
+            ballyV = -1*(R*Math.sin(Angle));
+
+            if (platformspeed>0) {
+                ballxV = (R*Math.cos(Angle));
+            } else if (platformspeed<0) {
+                ballxV = -1*(R*Math.cos(Angle));
+            } else {
+                if (ballxV>0) {
+                    ballxV = (R*Math.cos(Angle));
+                } else {
+                    ballxV = -1*(R*Math.cos(Angle));
+                }
+            }
+        }
+
+        if (bally>670){
+
+            if (balllost>60) {
+                bally = 590;
+                ballx = platformx+platformsize-5;
+
+                Angle = Math.toRadians((Math.random()*50)+25);
+
+                ballyV = -1 * (R * Math.sin(Angle));
+                int randomdirection = (int) (Math.random()*2);
+
+                if (randomdirection==2) {
+                    ballxV = (R * Math.cos(Angle));
+                } else {
+                    ballxV = -1*(R * Math.cos(Angle));
+                }
+                balllost = 0;
+            } else {
+                balllost++;
+            }
+        }
     }
 
     public void draw() {
@@ -70,8 +150,17 @@ public class GAME extends Canvas implements Runnable {
         g.setColor(Color.white);
         g.fillRect(platformx, 625, platformsize*2, 10);
 
+        g.fillOval((int)ballx, (int)bally,10,10);
+
+
+
         g.dispose();
         bs.show();
+    }
+
+    private void drawBrick(Graphics g, int x, int y) {
+        g.fillRect(x,y,60,20);
+        g.fillRect(x+5,y+5,50, 10);
     }
 
     public static void main(String[] args) {
@@ -119,7 +208,7 @@ public class GAME extends Canvas implements Runnable {
                     a=false;
                 }
             }
-            if (e.getKeyChar() == 'd' || e.getKeyChar() == 'd') {
+            if (e.getKeyChar() == 'd' || e.getKeyChar() == 'D') {
                 if (d) {
                     platformspeed+=4;
                     d=false;
@@ -138,7 +227,7 @@ public class GAME extends Canvas implements Runnable {
                     platformspeed+=4;
                     a=true;
             }
-            if (e.getKeyChar() == 'd' || e.getKeyChar() == 'd') {
+            if (e.getKeyChar() == 'd' || e.getKeyChar() == 'D') {
                     platformspeed+=-4;
                     d=true;
             }
