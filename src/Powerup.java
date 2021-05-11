@@ -1,19 +1,22 @@
 import java.awt.*;
 
-public class Brick {
-    private Rectangle hitBox;
-    private Color color;
+public class Powerup {
+        private Rectangle hitBox;
+        private Color color;
+        private Double fallSpeed;
+        private int power;
 
-    public Brick(int x, int y) {
-        color = getRandomColor();
-        hitBox = new Rectangle(x,y,60,20);
+    public Powerup(int x, int y) {
+        power = (int) Math.random()*5;
+        color = getColor();
+        hitBox = new Rectangle(x,y,20,20);
+        fallSpeed = (Math.random()*2)+1;
     }
 
-    private Color getRandomColor() {
+    private Color getcorespondingColor() {
         Color color = new Color((int) (Math.random()*100+75), (int) (Math.random()*100+75), (int) (Math.random()*100+75));
         return color;
     }
-
 
     public int getX() {
         return hitBox.x;
@@ -30,8 +33,4 @@ public class Brick {
     public Color getColor() {
         return color;
     }
-
-
-
 }
-

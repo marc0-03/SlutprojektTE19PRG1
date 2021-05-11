@@ -26,9 +26,12 @@ public class GAME extends Canvas implements Runnable {
     private double Angle;
 
     private int balllost, i;
-    private Collection<int> Brickx = new ArrayList<>();
+    private ArrayList<Brick> Bricks = new ArrayList<Brick>();
+    private ArrayList<Powerup> Powups = new ArrayList<Powerup>();
+    private int map1x[] = {210,210,210,210,210,280,280,280,280,280,350,350,350,350,350,420,420,420,420,420,490,490,490,490,490,560,560,560,560,560,630,630,630,630,630,700,700,700,700,700,770,770,770,770,770,840,840,840,840,840,910,910,910,910,910,980,980,980,980,980,};
+    private int map1y[] = {200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,};
 
-    private double ballx, bally, ballxV, ballyV, R;
+    private double ballx, bally, ballxV, ballyV, R; //Ball values
 
 
     public GAME() {
@@ -45,6 +48,11 @@ public class GAME extends Canvas implements Runnable {
 
         ballx = 700;
         bally = 590;
+
+        for (i=0; i<map1x.length; i++) {
+            Bricks.add(new Brick(map1x[i], map1y[i]));
+        }
+
 
         R=Math.sqrt(30);
 
@@ -64,29 +72,63 @@ public class GAME extends Canvas implements Runnable {
 
     public void update() {
 
-
-
-
             if (platformspeed < 0 && platformx > 200){
                 platformx += (platformspeed*speedmodifier);
-            } else if (platformspeed > 0 && (platformx+(platformsize*2))<1080) {
+            } else if (platformspeed > 0 && (platformx+(platformsize*2))<1050) {
                 platformx += (platformspeed*speedmodifier);
+            } else if (platformspeed < 0 && platformx < 200) {
+                platformx = 200;
+            } else if (platformspeed > 0 && (platformx+(platformsize*2))>1050) {
+                platformx = 1050-(platformsize*2);
             }
 
             ballx += ballxV;
+
+        Rectangle rect1 = new Rectangle((int)ballx, (int)bally, 10, 10);
+
+
+        for (i=0; i<Bricks.size(); i++) {
+            if (rect1.intersects(Bricks.get(i).getRect())) {
+                Bricks.remove(i);
+
+                ballxV*=-1;
+
+                if (Math.random()*100<5) {
+
+                }
+            }
+        }
             bally += ballyV;
+
+        rect1 = new Rectangle((int)ballx, (int)bally, 10, 10);
+
+
+        for (i=0; i<Bricks.size(); i++) {
+            if (rect1.intersects(Bricks.get(i).getRect())) {
+                Bricks.remove(i);
+
+                ballyV*=-1;
+            }
+        }
 
             if (ballx < 200) {
                 ballxV = ballxV*-1;
-            } else if (ballx > 1070) {
+            } else if (ballx > 1040) {
                 ballxV = ballxV*-1;
             }
             if (bally < 5) {
                 ballyV = ballyV*-1;
             }
 
-            Rectangle rect1 = new Rectangle((int)ballx, (int)bally, 10, 10);
         Rectangle rect2 = new Rectangle(platformx, 625, platformsize*2, 10);
+
+        for (i=0; i<Bricks.size(); i++) {
+            if (rect1.intersects(Bricks.get(i).getRect())) {
+                Bricks.remove(i);
+
+
+            }
+        }
 
         if (rect1.intersects(rect2)) {
             Angle = Math.toRadians((Math.random()*50)+25);
@@ -142,25 +184,29 @@ public class GAME extends Canvas implements Runnable {
         g.fillRect(0,0,1366, 768);
         g.setColor(new Color(120,100,0));
         g.fillRect(0,0,200,768);
-        g.fillRect(1080,0,200,768);
+        g.fillRect(1050,0,230,768);
         g.setColor(new Color(150,130,0));
         g.fillRect(5,5,190,640);
-        g.fillRect(1085,5,190,640);
+        g.fillRect(1055,5,220,640);
 
         g.setColor(Color.white);
         g.fillRect(platformx, 625, platformsize*2, 10);
 
         g.fillOval((int)ballx, (int)bally,10,10);
 
-
+        for (i=0; i<Bricks.size(); i++) {
+            drawBrick(g, Bricks.get(i).getX(), Bricks.get(i).getY(), Bricks.get(i).getColor());
+        }
 
         g.dispose();
         bs.show();
     }
 
-    private void drawBrick(Graphics g, int x, int y) {
+    private void drawBrick(Graphics g, int x, int y, Color C) {
+        g.setColor(C.darker());
         g.fillRect(x,y,60,20);
-        g.fillRect(x+5,y+5,50, 10);
+        g.setColor(C);
+        g.fillRect(x+3,y+3,54, 14);
     }
 
     public static void main(String[] args) {
