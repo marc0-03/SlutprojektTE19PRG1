@@ -87,9 +87,9 @@ public class GAME extends Canvas implements Runnable {
                     for (i = 0; i < Bricks.size(); i++) {
                         if (Balls.get(b).getRect().intersects(Bricks.get(i).getRect())) {
 
-                            Balls.get(b).X *= -1;
+                            Balls.get(b).ballXv *= -1;
 
-                            if (Math.random() * 100 < 15) {
+                            if (Math.random() * 100 < 95) {
                                 Powups.add(new Powerup(Bricks.get(i).getX() + 20, Bricks.get(i).getY()));
                             }
 
@@ -104,9 +104,9 @@ public class GAME extends Canvas implements Runnable {
                     for (i = 0; i < Bricks.size(); i++) {
                         if (Balls.get(b).getRect().intersects(Bricks.get(i).getRect())) {
 
-                            Balls.get(b).Y *= -1;
+                            Balls.get(b).ballYv *= -1;
 
-                            if (Math.random() * 100 < 15) {
+                            if (Math.random() * 100 < 95) {
                                 Powups.add(new Powerup(Bricks.get(i).getX() + 20, Bricks.get(i).getY()));
                             }
 
@@ -118,12 +118,13 @@ public class GAME extends Canvas implements Runnable {
 
 
                 if (Balls.get(b).getX() < 200) {
-                    Balls.get(b).ballXv = Balls.get(b).ballXv * -1;
+                    Balls.get(b).ballXv *= -1;
                 } else if (Balls.get(b).getX() > 1040) {
-                    Balls.get(b).ballXv = Balls.get(b).ballXv * -1;
+                    Balls.get(b).ballXv *= -1;
                 } //Ball hits wall
+
                 if (Balls.get(b).getY() < 5) {
-                    Balls.get(b).ballYv = Balls.get(b).ballYv * -1;
+                    Balls.get(b).ballYv *= -1;
                 } //Ball hits celling
 
 
@@ -149,6 +150,8 @@ public class GAME extends Canvas implements Runnable {
                         for (i = 0; i < map1x.length; i++) {
                             Bricks.add(new Brick(map1x[i], map1y[i]));
                         }
+
+
                     }
                 } //Ball hits platform
 

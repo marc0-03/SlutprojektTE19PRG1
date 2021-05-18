@@ -13,8 +13,7 @@ public class Ball {
         }
 
         public Rectangle getRect() {
-            Rectangle hitBox = new Rectangle((int)X, (int)Y, 10, 10);
-            return hitBox;
+            return new Rectangle((int) X, (int) Y, 10, 10);
         }
 
         public double getX() {
