@@ -4,7 +4,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Created 2021-04-27
@@ -25,13 +24,15 @@ public class GAME extends Canvas implements Runnable {
     private boolean a,d;
     private double Angle;
 
-    private int balllost, i;
+    private int balllost, i, b;
     private ArrayList<Brick> Bricks = new ArrayList<Brick>();
     private ArrayList<Powerup> Powups = new ArrayList<Powerup>();
+    private ArrayList<Ball> Balls = new ArrayList<Ball>();
     private int map1x[] = {210,210,210,210,210,280,280,280,280,280,350,350,350,350,350,420,420,420,420,420,490,490,490,490,490,560,560,560,560,560,630,630,630,630,630,700,700,700,700,700,770,770,770,770,770,840,840,840,840,840,910,910,910,910,910,980,980,980,980,980,};
     private int map1y[] = {200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,};
-
-    private double ballx, bally, ballxV, ballyV, R; //Ball values
+    private int map2x[] = {210, 210};
+    private int map2y[] = {200, 230};
+    private double R; //ball speed value
 
 
     public GAME() {
@@ -46,20 +47,16 @@ public class GAME extends Canvas implements Runnable {
         a=true;
         d=true;
 
-        ballx = 700;
-        bally = 590;
-
         for (i=0; i<map1x.length; i++) {
             Bricks.add(new Brick(map1x[i], map1y[i]));
         }
 
 
-        R=Math.sqrt(30);
 
+        R=Math.sqrt(30);
         Angle = Math.toRadians((Math.random()*50)+25);
 
-        ballyV = -1*(R*Math.sin(Angle));
-        ballxV = (R*Math.cos(Angle));
+        Balls.add(new Ball(700, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
 
 
 
@@ -82,93 +79,123 @@ public class GAME extends Canvas implements Runnable {
                 platformx = 1050-(platformsize*2);
             }
 
-            ballx += ballxV;
+        Rectangle rect2;
 
-        Rectangle rect1 = new Rectangle((int)ballx, (int)bally, 10, 10);
+            for (b=0; b < Balls.size(); b++) {
+                Balls.get(b).X += Balls.get(b).getXv();
+                if (Balls.get(b).getY() > 185 && Balls.get(b).getY() < 350) {
+                    for (i = 0; i < Bricks.size(); i++) {
+                        if (Balls.get(b).getRect().intersects(Bricks.get(i).getRect())) {
 
+                            Balls.get(b).X *= -1;
 
-        for (i=0; i<Bricks.size(); i++) {
-            if (rect1.intersects(Bricks.get(i).getRect())) {
-                Bricks.remove(i);
+                            if (Math.random() * 100 < 15) {
+                                Powups.add(new Powerup(Bricks.get(i).getX() + 20, Bricks.get(i).getY()));
+                            }
 
-                ballxV*=-1;
-
-                if (Math.random()*100<5) {
-
+                            Bricks.remove(i);
+                            i = Bricks.size() + 1;
+                        }
+                    } //Ball Hits bricks and might summon power upp
                 }
+
+                Balls.get(b).Y += Balls.get(b).getYv();
+                if (Balls.get(b).getY() > 185 && Balls.get(b).getY() < 350) {
+                    for (i = 0; i < Bricks.size(); i++) {
+                        if (Balls.get(b).getRect().intersects(Bricks.get(i).getRect())) {
+
+                            Balls.get(b).Y *= -1;
+
+                            if (Math.random() * 100 < 15) {
+                                Powups.add(new Powerup(Bricks.get(i).getX() + 20, Bricks.get(i).getY()));
+                            }
+
+                            Bricks.remove(i);
+                            i = Bricks.size() + 1;
+                        }
+                    }
+                }//Ball Hits bricks and might summon power upp
+
+
+                if (Balls.get(b).getX() < 200) {
+                    Balls.get(b).ballXv = Balls.get(b).ballXv * -1;
+                } else if (Balls.get(b).getX() > 1040) {
+                    Balls.get(b).ballXv = Balls.get(b).ballXv * -1;
+                } //Ball hits wall
+                if (Balls.get(b).getY() < 5) {
+                    Balls.get(b).ballYv = Balls.get(b).ballYv * -1;
+                } //Ball hits celling
+
+
+                rect2 = new Rectangle(platformx, 625, platformsize * 2, 10);
+                if (Balls.get(b).getRect().intersects(rect2)) {
+                    Angle = Math.toRadians((Math.random() * 50) + 25);
+
+                    Balls.get(b).ballYv = -1 * (R * Math.sin(Angle));
+
+                    if (platformspeed > 0) {
+                        Balls.get(b).ballXv = (R * Math.cos(Angle));
+                    } else if (platformspeed < 0) {
+                        Balls.get(b).ballXv = -1 * (R * Math.cos(Angle));
+                    } else {
+                        if (Balls.get(b).getXv() > 0) {
+                            Balls.get(b).ballXv = (R * Math.cos(Angle));
+                        } else {
+                            Balls.get(b).ballXv = -1 * (R * Math.cos(Angle));
+                        }
+                    }
+
+                    if (Bricks.isEmpty()) {
+                        for (i = 0; i < map1x.length; i++) {
+                            Bricks.add(new Brick(map1x[i], map1y[i]));
+                        }
+                    }
+                } //Ball hits platform
+
+                if (Balls.get(b).getY() > 670) {
+                    Balls.remove(b);
+                } //losing the ball
             }
-        }
-            bally += ballyV;
 
-        rect1 = new Rectangle((int)ballx, (int)bally, 10, 10);
+        if (Balls.isEmpty()) {
+            if (balllost > 60) {
+                Angle = Math.toRadians((Math.random() * 50) + 25);
 
+                Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
 
-        for (i=0; i<Bricks.size(); i++) {
-            if (rect1.intersects(Bricks.get(i).getRect())) {
-                Bricks.remove(i);
-
-                ballyV*=-1;
-            }
-        }
-
-            if (ballx < 200) {
-                ballxV = ballxV*-1;
-            } else if (ballx > 1040) {
-                ballxV = ballxV*-1;
-            }
-            if (bally < 5) {
-                ballyV = ballyV*-1;
-            }
-
-        Rectangle rect2 = new Rectangle(platformx, 625, platformsize*2, 10);
-
-        for (i=0; i<Bricks.size(); i++) {
-            if (rect1.intersects(Bricks.get(i).getRect())) {
-                Bricks.remove(i);
-
-
-            }
-        }
-
-        if (rect1.intersects(rect2)) {
-            Angle = Math.toRadians((Math.random()*50)+25);
-
-            ballyV = -1*(R*Math.sin(Angle));
-
-            if (platformspeed>0) {
-                ballxV = (R*Math.cos(Angle));
-            } else if (platformspeed<0) {
-                ballxV = -1*(R*Math.cos(Angle));
-            } else {
-                if (ballxV>0) {
-                    ballxV = (R*Math.cos(Angle));
-                } else {
-                    ballxV = -1*(R*Math.cos(Angle));
-                }
-            }
-        }
-
-        if (bally>670){
-
-            if (balllost>60) {
-                bally = 590;
-                ballx = platformx+platformsize-5;
-
-                Angle = Math.toRadians((Math.random()*50)+25);
-
-                ballyV = -1 * (R * Math.sin(Angle));
-                int randomdirection = (int) (Math.random()*2);
-
-                if (randomdirection==2) {
-                    ballxV = (R * Math.cos(Angle));
-                } else {
-                    ballxV = -1*(R * Math.cos(Angle));
-                }
                 balllost = 0;
             } else {
                 balllost++;
             }
         }
+
+        rect2 = new Rectangle(platformx, 625, platformsize * 2, 10);
+
+        if (Powups.size()>0) {
+            for (i = 0; i < Powups.size(); i++) {
+                Powups.get(i).Y += Powups.get(i).getFallSpeed();
+
+            if (Powups.get(i).getY()>650) {
+                Powups.remove(i);
+            } else if (Powups.get(i).getRect().intersects(rect2)) {
+                if (Powups.get(i).getPower()==1) {
+                    speedmodifier = 1.5;
+                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                } else if (Powups.get(i).getPower()==2) {
+                    speedmodifier = 0.8;
+                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                } else if (Powups.get(i).getPower()==3) {
+                    platformsize = 15;
+                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                } else {
+                    platformsize = 35;
+                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                }
+                Powups.remove(i);
+            }
+            }
+        }
+
     }
 
     public void draw() {
@@ -191,11 +218,16 @@ public class GAME extends Canvas implements Runnable {
 
         g.setColor(Color.white);
         g.fillRect(platformx, 625, platformsize*2, 10);
-
-        g.fillOval((int)ballx, (int)bally,10,10);
+        for (b=0; b < Balls.size(); b++) {
+            g.fillOval((int) Balls.get(b).X, (int) Balls.get(b).Y, 10, 10);
+        }
 
         for (i=0; i<Bricks.size(); i++) {
             drawBrick(g, Bricks.get(i).getX(), Bricks.get(i).getY(), Bricks.get(i).getColor());
+        }
+
+        for (i=0; i<Powups.size(); i++) {
+            drawPower(g, (int) Powups.get(i).getX(), (int) Powups.get(i).getY(), Powups.get(i).getColor());
         }
 
         g.dispose();
@@ -207,6 +239,11 @@ public class GAME extends Canvas implements Runnable {
         g.fillRect(x,y,60,20);
         g.setColor(C);
         g.fillRect(x+3,y+3,54, 14);
+    }
+
+    private void drawPower(Graphics g, int x, int y, Color C) {
+        g.setColor(C);
+        g.fillRect(x,y,20,20);
     }
 
     public static void main(String[] args) {
