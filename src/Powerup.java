@@ -7,7 +7,7 @@ public class Powerup {
         public double X,Y;
 
     public Powerup(int x, int y) {
-        power = (int) ((Math.random()*4)+1);
+        power = (int) ((Math.random()*6)+1);
         color = correspondingColor();
         X = x;
         Y = y;
@@ -24,8 +24,10 @@ public class Powerup {
             colo = new Color(0, 100, 4);
         } else if (power==4){
             colo = new Color(4, 150, 100);
-        } else {
+        } else if (power==5){
             colo = new Color(100,100,255);
+        } else {
+            colo = new Color(180, 0,255);
         }
         return colo;
     }

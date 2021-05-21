@@ -14,24 +14,27 @@ import java.util.ArrayList;
 public class GAME extends Canvas implements Runnable {
 
     private Thread thread;
-    int fps = 30;
+    int fps = 60;
     private boolean isRunning;
 
     private BufferStrategy bs;
 
     private int platformx, platformsize, platformspeed;
     double speedmodifier;
-    private boolean a,d;
+    private boolean a,d,ballReady;
     private double Angle;
+    private int newBrickssWait, Level, Lives, Score, ScoreMuli;
 
-    private int balllost, i, b;
+    private int balllost, i, b, Map;
     private ArrayList<Brick> Bricks = new ArrayList<Brick>();
     private ArrayList<Powerup> Powups = new ArrayList<Powerup>();
     private ArrayList<Ball> Balls = new ArrayList<Ball>();
-    private int map1x[] = {210,210,210,210,210,280,280,280,280,280,350,350,350,350,350,420,420,420,420,420,490,490,490,490,490,560,560,560,560,560,630,630,630,630,630,700,700,700,700,700,770,770,770,770,770,840,840,840,840,840,910,910,910,910,910,980,980,980,980,980,};
-    private int map1y[] = {200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,};
-    private int map2x[] = {210, 210};
-    private int map2y[] = {200, 230};
+    private final int[] map1x = {210,210,210,210,210,280,280,280,280,280,350,350,350,350,350,420,420,420,420,420,490,490,490,490,490,560,560,560,560,560,630,630,630,630,630,700,700,700,700,700,770,770,770,770,770,840,840,840,840,840,910,910,910,910,910,980,980,980,980,980,};
+    private final int[] map1y = {200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,};
+    private final int[] map2x = {210, 210, 210, 210, 210, 210, 210, 210};
+    private final int[] map2y = { 20,  50,  80, 110, 140, 170, 200, 230};
+    private final int[] map3x = {210, 210};
+    private final int[] map3y = {200, 230};
     private double R; //ball speed value
 
 
@@ -44,50 +47,24 @@ public class GAME extends Canvas implements Runnable {
         this.addKeyListener(new KL());
         frame.setVisible(true);
 
-        a=true;
-        d=true;
-
-        for (i=0; i<map1x.length; i++) {
-            Bricks.add(new Brick(map1x[i], map1y[i]));
-        }
-
-
-
-        R=Math.sqrt(30);
-        Angle = Math.toRadians((Math.random()*50)+25);
-
-        Balls.add(new Ball(700, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
-
-
-
-        platformspeed = 0;
-        speedmodifier = 1;
-        platformsize = 25;
-        platformx = ((1366/2)-platformsize);
+        Reset();
     }
 
-
     public void update() {
+        if (Lives>0) {
+            PlatformMove();
 
-            if (platformspeed < 0 && platformx > 200){
-                platformx += (platformspeed*speedmodifier);
-            } else if (platformspeed > 0 && (platformx+(platformsize*2))<1050) {
-                platformx += (platformspeed*speedmodifier);
-            } else if (platformspeed < 0 && platformx < 200) {
-                platformx = 200;
-            } else if (platformspeed > 0 && (platformx+(platformsize*2))>1050) {
-                platformx = 1050-(platformsize*2);
-            }
+            Rectangle rect2;
 
-        Rectangle rect2;
-
-            for (b=0; b < Balls.size(); b++) {
+            for (b = 0; b < Balls.size(); b++) {
                 Balls.get(b).X += Balls.get(b).getXv();
-                if (Balls.get(b).getY() > 185 && Balls.get(b).getY() < 350) {
+                if (Balls.get(b).getY() < 370) {
                     for (i = 0; i < Bricks.size(); i++) {
                         if (Balls.get(b).getRect().intersects(Bricks.get(i).getRect())) {
 
                             Balls.get(b).ballXv *= -1;
+
+                            Score += 100*ScoreMuli;
 
                             if (Math.random() * 100 < 95) {
                                 Powups.add(new Powerup(Bricks.get(i).getX() + 20, Bricks.get(i).getY()));
@@ -100,11 +77,13 @@ public class GAME extends Canvas implements Runnable {
                 }
 
                 Balls.get(b).Y += Balls.get(b).getYv();
-                if (Balls.get(b).getY() > 185 && Balls.get(b).getY() < 350) {
+                if (Balls.get(b).getY() < 370) {
                     for (i = 0; i < Bricks.size(); i++) {
                         if (Balls.get(b).getRect().intersects(Bricks.get(i).getRect())) {
 
                             Balls.get(b).ballYv *= -1;
+
+                            Score += 100*ScoreMuli;
 
                             if (Math.random() * 100 < 95) {
                                 Powups.add(new Powerup(Bricks.get(i).getX() + 20, Bricks.get(i).getY()));
@@ -117,18 +96,11 @@ public class GAME extends Canvas implements Runnable {
                 }//Ball Hits bricks and might summon power upp
 
 
-                if (Balls.get(b).getX() < 200) {
-                    Balls.get(b).ballXv *= -1;
-                } else if (Balls.get(b).getX() > 1040) {
-                    Balls.get(b).ballXv *= -1;
-                } //Ball hits wall
-
-                if (Balls.get(b).getY() < 5) {
-                    Balls.get(b).ballYv *= -1;
-                } //Ball hits celling
+                ballHitWalls();
+                ballHitCelling();
 
 
-                rect2 = new Rectangle(platformx, 625, platformsize * 2, 10);
+                rect2 = new Rectangle(platformx - platformsize, 625, platformsize * 2, 10);
                 if (Balls.get(b).getRect().intersects(rect2)) {
                     Angle = Math.toRadians((Math.random() * 50) + 25);
 
@@ -146,13 +118,6 @@ public class GAME extends Canvas implements Runnable {
                         }
                     }
 
-                    if (Bricks.isEmpty()) {
-                        for (i = 0; i < map1x.length; i++) {
-                            Bricks.add(new Brick(map1x[i], map1y[i]));
-                        }
-
-
-                    }
                 } //Ball hits platform
 
                 if (Balls.get(b).getY() > 670) {
@@ -160,45 +125,25 @@ public class GAME extends Canvas implements Runnable {
                 } //losing the ball
             }
 
-        if (Balls.isEmpty()) {
-            if (balllost > 60) {
-                Angle = Math.toRadians((Math.random() * 50) + 25);
+            if (Balls.isEmpty() && !ballReady) {
+                if (balllost > 60) {
 
-                Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                    ballReady = true;
 
-                balllost = 0;
-            } else {
-                balllost++;
-            }
-        }
-
-        rect2 = new Rectangle(platformx, 625, platformsize * 2, 10);
-
-        if (Powups.size()>0) {
-            for (i = 0; i < Powups.size(); i++) {
-                Powups.get(i).Y += Powups.get(i).getFallSpeed();
-
-            if (Powups.get(i).getY()>650) {
-                Powups.remove(i);
-            } else if (Powups.get(i).getRect().intersects(rect2)) {
-                if (Powups.get(i).getPower()==1) {
-                    speedmodifier = 1.5;
-                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
-                } else if (Powups.get(i).getPower()==2) {
-                    speedmodifier = 0.8;
-                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
-                } else if (Powups.get(i).getPower()==3) {
-                    platformsize = 15;
-                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                    balllost = 0;
+                    Powups.clear();
+                    Lives--;
                 } else {
-                    platformsize = 35;
-                    Balls.add(new Ball(platformx + platformsize - 5, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+                    balllost++;
                 }
-                Powups.remove(i);
             }
-            }
-        }
 
+            newMapCheck();
+
+            rect2 = new Rectangle(platformx - platformsize, 625, platformsize * 2, 10);
+
+            powerCheckHit(rect2);
+        }
     }
 
     public void draw() {
@@ -218,23 +163,182 @@ public class GAME extends Canvas implements Runnable {
         g.setColor(new Color(150,130,0));
         g.fillRect(5,5,190,640);
         g.fillRect(1055,5,220,640);
+        g.setColor(new Color(120,100,0));
+        g.fillRect(20,20,160,600);
+        g.setColor(Color.BLACK);
+        g.fillRect(25,25,150,590);
+        g.setFont(new Font("Monospaced", Font.BOLD, 24));
+        g.setColor(new Color(229, 187, 60));
+        g.drawString("HighScores",27,45);
+        g.fillRect(28,46,142,4);
 
         g.setColor(Color.white);
-        g.fillRect(platformx, 625, platformsize*2, 10);
+        g.fillRect(platformx-platformsize, 625, platformsize*2, 10);
+        if (ballReady) {
+            g.fillOval(platformx-5,610,10,10);
+        }
+
         for (b=0; b < Balls.size(); b++) {
             g.fillOval((int) Balls.get(b).X, (int) Balls.get(b).Y, 10, 10);
         }
-
         for (i=0; i<Bricks.size(); i++) {
             drawBrick(g, Bricks.get(i).getX(), Bricks.get(i).getY(), Bricks.get(i).getColor());
         }
-
         for (i=0; i<Powups.size(); i++) {
-            drawPower(g, (int) Powups.get(i).getX(), (int) Powups.get(i).getY(), Powups.get(i).getColor());
+            drawPower(g, (int) Powups.get(i).getX(), (int) Powups.get(i).getY(), Powups.get(i).getColor(), Powups.get(i).getPower());
+        }
+
+        if (newBrickssWait>0 && newBrickssWait<160) {
+            g.setFont(new Font("Comic Sans MS", Font.BOLD, 70));
+            g.setColor(Color.white);
+            g.drawString(("LEVEL " + Level + " COMPLETED"), 250, 100);
+        }
+
+        if (Lives<=0) {
+            g.setColor(Color.lightGray);
+            g.setFont(new Font("Comic Sans MS", Font.BOLD, 70));
+            g.drawString(("Score: " + Score),200,100);
+            g.drawString(("Press R to restart"), 270, 400);
         }
 
         g.dispose();
         bs.show();
+    }
+
+    private void newMapCheck() {
+        if (Bricks.isEmpty()) {
+            if (newBrickssWait >= 180){
+                newBrickssWait = 0;
+                Balls.clear();
+                Powups.clear();
+                ballReady=true;
+                ResetAtrb();
+                Map = (int) ((Math.random()*3)+1);
+                if (Map == 1) {
+                    for (i = 0; i < map1x.length; i++) {
+                        Bricks.add(new Brick(map1x[i], map1y[i]));
+                    }
+                } else if (Map == 2) {
+                    for (i = 0; i < map2x.length; i++) {
+                        Bricks.add(new Brick(map2x[i], map2y[i]));
+                    }
+                } else {
+                    for (i = 0; i < map3x.length; i++) {
+                        Bricks.add(new Brick(map3x[i], map3y[i]));
+                    }
+                }
+                R=5.5+Level*0.5;
+                Level++;
+            } else {
+                newBrickssWait++;
+            }
+
+        }
+    }
+
+    private void powerCheckHit(Rectangle rect2) {
+        if (Powups.size()>0) {
+            for (i = 0; i < Powups.size(); i++) {
+                Powups.get(i).Y += Powups.get(i).getFallSpeed();
+
+            if (Powups.get(i).getY()>650) {
+                Powups.remove(i);
+            } else if (Powups.get(i).getRect().intersects(rect2)) {
+                if (Powups.get(i).getPower()==1) {
+                    if (speedmodifier<2.5) {
+                        speedmodifier += 0.2;
+                    }
+                } else if (Powups.get(i).getPower()==2) {
+                    if (speedmodifier>0.5) {
+                        speedmodifier -= 0.2;
+                    }
+                } else if (Powups.get(i).getPower()==3) {
+                    if (platformsize!=15) {
+                        platformsize -= 10;
+                    }
+                } else if (Powups.get(i).getPower()==4){
+                    if (platformsize!=115) {
+                        platformsize += 10;
+                        if(platformx-platformsize < 200) {
+                            platformx = 200+platformsize;
+                        } else if (platformx+(platformsize*2)>1050) {
+                            platformx = 1050-platformsize;
+                        }
+                    }
+                } else if (Powups.get(i).getPower()==5){
+                   ballSpawnRandomDirection();
+                   ballSpawnRandomDirection();
+                   ballSpawnRandomDirection();
+                } else {
+                    if (ScoreMuli!=16) {
+                        ScoreMuli *= 2;
+                    }
+                }
+                Powups.remove(i);
+            }
+            }
+        }
+    } //Checks if the platform touches any powerups
+
+    private void ballHitWalls() {
+        if (Balls.get(b).getX() < 200) {
+            Balls.get(b).ballXv *= -1;
+            Balls.get(b).X = 200;
+        } else if (Balls.get(b).getX() > 1040) {
+            Balls.get(b).ballXv *= -1;
+            Balls.get(b).X = 1040;
+        } //Ball hits wall
+    } //Checks if any balls touch a wall
+
+    private void ballHitCelling() {
+        if (Balls.get(b).getY() < 5) {
+            Balls.get(b).ballYv *= -1;
+            Balls.get(b).Y=5;
+        }
+    } //Checks if any balls touch the celling
+
+    private void ballSpawnRandomDirection() {
+        Angle = Math.toRadians((Math.random() * 50) + 25);
+
+        int randdir = (int) (Math.random()*2)+1;
+
+        if (randdir==1) {
+            Balls.add(new Ball(platformx, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+        } else {
+            Balls.add(new Ball(platformx, 590, -1*R*Math.cos(Angle), -1*R*Math.sin(Angle)));
+        }
+    } //Spaws a ball above the platform
+
+    private void PlatformMove() {
+        if ((platformspeed < 0 && platformx-platformsize+platformspeed < 200) && platformx != (200+platformsize)) {
+            platformx = 200+platformsize;
+        } else if ((platformspeed > 0 && platformx+platformsize+platformspeed > 1050) && platformx != (1050-platformsize)){
+            platformx = 1050-platformsize;
+        } else if ((platformspeed < 0 && platformx-platformsize > 200) || (platformspeed > 0 && (platformx+platformsize<1050))) {
+            platformx += (platformspeed*speedmodifier);
+        }
+    } //Moves the platform
+
+    private void shotBall() {
+        Angle = Math.toRadians((Math.random()*50)+25);
+        Double xv;
+
+        if (platformspeed > 0) {
+            xv = (R * Math.cos(Angle));
+        } else if (platformspeed < 0) {
+            xv = -1 * (R * Math.cos(Angle));
+        } else {
+            int Rand = (int) (Math.random()*2)+1;
+            Angle = Math.toRadians((Math.random()*25)+50);
+            if (Rand==1) {
+                xv = (R * Math.cos(Angle));
+            } else {
+                xv = -1 * (R * Math.cos(Angle));
+            }
+        }
+        Balls.add(new Ball(platformx-5,610, xv, -1*(R*Math.sin(Angle))));
+
+        ballReady=false;
     }
 
     private void drawBrick(Graphics g, int x, int y, Color C) {
@@ -244,10 +348,75 @@ public class GAME extends Canvas implements Runnable {
         g.fillRect(x+3,y+3,54, 14);
     }
 
-    private void drawPower(Graphics g, int x, int y, Color C) {
+    private void drawPower(Graphics g, int x, int y, Color C, int P) {
         g.setColor(C);
         g.fillRect(x,y,20,20);
+        g.setColor(C.darker());
+        g.fillRect(x+2, y+2, 16, 16);
+        g.setColor(C.brighter());
+        if (P==5) {
+            g.fillOval(x+2,y+2,7,7);
+            g.fillOval(x+11,y+2,7,7);
+            g.fillOval(x+6,y+10,8,8);
+        } else if (P==1) {
+            //speed up
+
+        } else if (P==2) {
+            //speed down
+
+        }  else if (P==3) {
+            //platsize down
+            g.fillRect(x+2,y+8,6,4);
+        }  else if (P==4) {
+            //platsize up
+            g.fillRect(x+3,y+8,6,4);
+
+        } else {
+            g.setFont(new Font("Comic Sans MS", Font.BOLD, 12));
+            g.drawString("X2",x+2,y+14);
+
+        }
     }
+
+    private void Reset() {
+        a=true;
+        d=true;
+
+        R=5.5; //Ballspeed
+
+        Bricks.clear();
+        Balls.clear();
+        Powups.clear();
+        ResetAtrb();
+        Level = 1;
+        Lives = 2;
+        ballReady = true;
+        platformx = (1366/2);
+
+        Map = (int) ((Math.random()*3)+1);
+        if (Map == 1) {
+            for (i = 0; i < map1x.length; i++) {
+                Bricks.add(new Brick(map1x[i], map1y[i]));
+            }
+        } else if (Map == 2) {
+            for (i = 0; i < map2x.length; i++) {
+                Bricks.add(new Brick(map2x[i], map2y[i]));
+            }
+        } else {
+            for (i = 0; i < map3x.length; i++) {
+                Bricks.add(new Brick(map3x[i], map3y[i]));
+            }
+        }
+    }
+
+    private void ResetAtrb() {
+        speedmodifier = 1;
+        platformsize = 25;
+        newBrickssWait = 0;
+        ScoreMuli=1;
+    }
+
+
 
     public static void main(String[] args) {
         GAME painting = new GAME();
@@ -276,7 +445,6 @@ public class GAME extends Canvas implements Runnable {
         while (isRunning) {
             long now = System.currentTimeMillis();
             if (now - lastTime > deltaT) {
-                update();
                 draw();
                 lastTime = now;
             }
@@ -300,6 +468,23 @@ public class GAME extends Canvas implements Runnable {
                     d=false;
                 }
             }
+            if (e.getKeyChar() == ' ') {
+                if (ballReady) {
+                    shotBall();
+                }
+            }
+
+            if (e.getKeyChar() == 'r' || e.getKeyChar() == 'R') {
+                if (Lives<=0) {
+                    Reset();
+                }
+            }
+
+            if (e.getKeyChar() == 'b' || e.getKeyChar() == 'B') {
+                ballSpawnRandomDirection();
+                ballSpawnRandomDirection();
+                ballSpawnRandomDirection();
+            }
         }
 
         @Override
@@ -319,4 +504,5 @@ public class GAME extends Canvas implements Runnable {
             }
         }
     }
+
 }
