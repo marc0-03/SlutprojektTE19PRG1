@@ -21,7 +21,7 @@ public class GAME extends Canvas implements Runnable {
 
     private int platformx, platformsize, platformspeed;
     double speedmodifier;
-    private boolean a,d,ballReady;
+    private boolean a,d,ballReady, paused;
     private double Angle;
     private int newBrickssWait, Level, Lives, Score, ScoreMuli;
 
@@ -48,10 +48,11 @@ public class GAME extends Canvas implements Runnable {
         frame.setVisible(true);
 
         Reset();
+        paused=false;
     }
 
     public void update() {
-        if (Lives>0) {
+        if (Lives>0 && !paused) {
             PlatformMove();
 
             Rectangle rect2;
@@ -125,7 +126,7 @@ public class GAME extends Canvas implements Runnable {
                 } //losing the ball
             }
 
-            if (Balls.isEmpty() && !ballReady) {
+            if (Balls.isEmpty() && !ballReady && newBrickssWait == 0) {
                 if (balllost > 60) {
 
                     ballReady = true;
@@ -165,12 +166,17 @@ public class GAME extends Canvas implements Runnable {
         g.fillRect(1055,5,220,640);
         g.setColor(new Color(120,100,0));
         g.fillRect(20,20,160,600);
+        g.fillRect(1070,20,160,160);
         g.setColor(Color.BLACK);
         g.fillRect(25,25,150,590);
+        g.fillRect(1075,25,150,150);
         g.setFont(new Font("Monospaced", Font.BOLD, 24));
         g.setColor(new Color(229, 187, 60));
         g.drawString("HighScores",27,45);
+        g.drawString("lives: " + Lives,1087,45);
         g.fillRect(28,46,142,4);
+
+        drawHeart(g,1100,60);
 
         g.setColor(Color.white);
         g.fillRect(platformx-platformsize, 625, platformsize*2, 10);
@@ -181,6 +187,7 @@ public class GAME extends Canvas implements Runnable {
         for (b=0; b < Balls.size(); b++) {
             g.fillOval((int) Balls.get(b).X, (int) Balls.get(b).Y, 10, 10);
         }
+
         for (i=0; i<Bricks.size(); i++) {
             drawBrick(g, Bricks.get(i).getX(), Bricks.get(i).getY(), Bricks.get(i).getColor());
         }
@@ -192,13 +199,43 @@ public class GAME extends Canvas implements Runnable {
             g.setFont(new Font("Comic Sans MS", Font.BOLD, 70));
             g.setColor(Color.white);
             g.drawString(("LEVEL " + Level + " COMPLETED"), 250, 100);
+            if (Level%5 == 0) {
+                g.drawString(("You gain 1 life"), 350, 400);
+            }
         }
 
-        if (Lives<=0) {
+        if (Lives==0){
             g.setColor(Color.lightGray);
             g.setFont(new Font("Comic Sans MS", Font.BOLD, 70));
             g.drawString(("Score: " + Score),200,100);
             g.drawString(("Press R to restart"), 270, 400);
+        } else {
+            g.setFont(new Font("Monospaced", Font.BOLD, 14));
+            g.setColor(Color.white);
+            g.drawString(("Score: " + Score), 205,14);
+            g.drawString(("Balls: " + Balls.size()), 205,28);
+        }
+
+        if (paused) {
+            g.setFont(new Font("Comic Sans MS", Font.BOLD, 200));
+            g.setColor(new Color(0,0,0));
+            g.drawString("Paused",300,300);
+
+            g.setColor(new Color(50,50,50));
+            g.drawString("Paused",297,303);
+
+            g.setColor(new Color(100,100,100));
+            g.drawString("Paused",294,306);
+
+            g.setColor(new Color(150,150,150));
+            g.drawString("Paused",291,309);
+
+            g.setColor(new Color(200,200,200));
+            g.drawString("Paused",288,312);
+
+            g.setColor(new Color(255,255,255));
+            g.drawString("Paused",285,315);
+
         }
 
         g.dispose();
@@ -227,7 +264,10 @@ public class GAME extends Canvas implements Runnable {
                         Bricks.add(new Brick(map3x[i], map3y[i]));
                     }
                 }
-                R=5.5+Level*0.5;
+                R=5.5+Level*0.25;
+                if (Level%5==0){
+                    Lives++;
+                }
                 Level++;
             } else {
                 newBrickssWait++;
@@ -261,7 +301,7 @@ public class GAME extends Canvas implements Runnable {
                         platformsize += 10;
                         if(platformx-platformsize < 200) {
                             platformx = 200+platformsize;
-                        } else if (platformx+(platformsize*2)>1050) {
+                        } else if (platformx+platformsize>1050) {
                             platformx = 1050-platformsize;
                         }
                     }
@@ -303,9 +343,9 @@ public class GAME extends Canvas implements Runnable {
         int randdir = (int) (Math.random()*2)+1;
 
         if (randdir==1) {
-            Balls.add(new Ball(platformx, 590, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
+            Balls.add(new Ball(platformx-5, 610, R*Math.cos(Angle), -1*(R*Math.sin(Angle))));
         } else {
-            Balls.add(new Ball(platformx, 590, -1*R*Math.cos(Angle), -1*R*Math.sin(Angle)));
+            Balls.add(new Ball(platformx-5, 610, -1*R*Math.cos(Angle), -1*R*Math.sin(Angle)));
         }
     } //Spaws a ball above the platform
 
@@ -329,7 +369,7 @@ public class GAME extends Canvas implements Runnable {
             xv = -1 * (R * Math.cos(Angle));
         } else {
             int Rand = (int) (Math.random()*2)+1;
-            Angle = Math.toRadians((Math.random()*25)+50);
+            Angle = Math.toRadians(80);
             if (Rand==1) {
                 xv = (R * Math.cos(Angle));
             } else {
@@ -346,6 +386,23 @@ public class GAME extends Canvas implements Runnable {
         g.fillRect(x,y,60,20);
         g.setColor(C);
         g.fillRect(x+3,y+3,54, 14);
+    }
+
+    private void drawHeart(Graphics g, int x, int y) {
+        if (Lives==1) {
+            g.setColor(Color.darkGray);
+        } else if (Lives==2) {
+            g.setColor(new Color(176, 41, 41));
+        } else if (Lives>2) {
+            g.setColor(new Color(200,0,0));
+        } else {
+            g.setColor(new Color(30,30,30));
+        }
+        g.fillOval(x,y,50,50);
+        g.fillOval(x+40,y,50,50);
+        int[] X = {x, x+45, x+90};
+        int[] Y = {y+25, y+100, y+25};
+        g.fillPolygon(X,Y,3);
     }
 
     private void drawPower(Graphics g, int x, int y, Color C, int P) {
@@ -481,15 +538,25 @@ public class GAME extends Canvas implements Runnable {
             }
 
             if (e.getKeyChar() == 'b' || e.getKeyChar() == 'B') {
-                ballSpawnRandomDirection();
-                ballSpawnRandomDirection();
-                ballSpawnRandomDirection();
+                for (i=0; i<2000; i++) {
+                    ballSpawnRandomDirection();
+                    ballSpawnRandomDirection();
+                    ballSpawnRandomDirection();
+                }
             }
         }
 
         @Override
         public void keyPressed(KeyEvent e) {
-
+            if (e.getKeyChar() == 'p' || e.getKeyChar() == 'P') {
+                if (Lives!=0) {
+                    if (paused) {
+                        paused = false;
+                    } else {
+                        paused = true;
+                    }
+                }
+            }
         }
 
         @Override
