@@ -3,7 +3,13 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
 
 /**
  * Created 2021-04-27
@@ -31,8 +37,8 @@ public class GAME extends Canvas implements Runnable {
     private ArrayList<Ball> Balls = new ArrayList<Ball>();
     private final int[] map1x = {210,210,210,210,210,280,280,280,280,280,350,350,350,350,350,420,420,420,420,420,490,490,490,490,490,560,560,560,560,560,630,630,630,630,630,700,700,700,700,700,770,770,770,770,770,840,840,840,840,840,910,910,910,910,910,980,980,980,980,980,};
     private final int[] map1y = {200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,};
-    private final int[] map2x = {210, 210, 210, 210, 210, 210, 210, 210};
-    private final int[] map2y = { 20,  50,  80, 110, 140, 170, 200, 230};
+    private final int[] map2x = { 210, 210, 210, 210, 210, 210, 210, 350, 350, 350, 350, 350, 350, 350, 420, 420, 420, 420, 420, 420, 420, 490, 490, 490, 490, 490, 490, 490, 560, 560, 560, 560, 560, 560, 560, 630, 630, 630, 630, 630, 630, 630, 700, 700, 700, 700, 700, 700, 700, 770, 770, 770, 770, 770, 770, 770, 980, 980, 980, 980, 980, 980, 980, 840, 840, 840, 840, 840, 840, 840,};
+    private final int[] map2y = { 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320,};
     private final int[] map3x = {210, 210};
     private final int[] map3y = {200, 230};
     private double R; //ball speed value
@@ -72,6 +78,7 @@ public class GAME extends Canvas implements Runnable {
                             }
 
                             Bricks.remove(i);
+                            Balls.get(b).X += Balls.get(b).getXv();
                             i = Bricks.size() + 1;
                         }
                     } //Ball Hits bricks and might summon power upp
@@ -91,6 +98,7 @@ public class GAME extends Canvas implements Runnable {
                             }
 
                             Bricks.remove(i);
+                            Balls.get(b).Y += Balls.get(b).getYv();
                             i = Bricks.size() + 1;
                         }
                     }
@@ -134,6 +142,9 @@ public class GAME extends Canvas implements Runnable {
                     balllost = 0;
                     Powups.clear();
                     Lives--;
+                    if (Lives==0){
+                        newHigh();
+                    }
                 } else {
                     balllost++;
                 }
@@ -167,21 +178,37 @@ public class GAME extends Canvas implements Runnable {
         g.setColor(new Color(120,100,0));
         g.fillRect(20,20,160,600);
         g.fillRect(1070,20,160,160);
+        g.fillRect(1070,195,160,390);
         g.setColor(Color.BLACK);
         g.fillRect(25,25,150,590);
         g.fillRect(1075,25,150,150);
+        g.fillRect(1075,200,150,380);
         g.setFont(new Font("Monospaced", Font.BOLD, 24));
         g.setColor(new Color(229, 187, 60));
         g.drawString("HighScores",27,45);
         g.drawString("lives: " + Lives,1087,45);
         g.fillRect(28,46,142,4);
 
+        g.setFont(new Font("Monospaced", Font.BOLD, 28));
+        ArrayList<Integer> highs = getHigh();
+        for (i=0; i<highs.size(); i++) {
+            g.drawString(highs.get(i) + "", 27,75+(i*25));
+        }
+
+
         drawHeart(g,1100,60);
+        drawPowerList(g,1080, 220);
 
         g.setColor(Color.white);
         g.fillRect(platformx-platformsize, 625, platformsize*2, 10);
         if (ballReady) {
             g.fillOval(platformx-5,610,10,10);
+            if (Score==0) {
+                g.setFont(new Font("Monospaced", Font.BOLD, 40));
+                g.drawString("Use A And D To Move", 400, 500);
+                g.setFont(new Font("Monospaced", Font.BOLD, 50));
+                g.drawString("Press Space To Start", 330, 550);
+            }
         }
 
         for (b=0; b < Balls.size(); b++) {
@@ -205,10 +232,21 @@ public class GAME extends Canvas implements Runnable {
         }
 
         if (Lives==0){
-            g.setColor(Color.lightGray);
-            g.setFont(new Font("Comic Sans MS", Font.BOLD, 70));
-            g.drawString(("Score: " + Score),200,100);
-            g.drawString(("Press R to restart"), 270, 400);
+            g.setColor(Color.BLACK);
+            g.fillRect(200,0,850,600);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Monospaced", Font.BOLD, 140));
+            g.drawString("GAME OVER", 250, 120);
+            g.setFont(new Font("Monospaced", Font.BOLD, 75));
+            g.drawString((Score+" Pts"),450,300);
+            g.drawString(("Press R to restart"), 215, 570);
+
+            if (highs.contains(Score)) {
+                g.setColor(new Color(120,100,0));
+                g.drawString(("New HighScore"), 343, 219);
+                g.setColor(new Color(150,130,0));
+                g.drawString(("New HighScore"), 340, 220);
+            }
         } else {
             g.setFont(new Font("Monospaced", Font.BOLD, 14));
             g.setColor(Color.white);
@@ -250,18 +288,14 @@ public class GAME extends Canvas implements Runnable {
                 Powups.clear();
                 ballReady=true;
                 ResetAtrb();
-                Map = (int) ((Math.random()*3)+1);
+                Map = (int) ((Math.random()*2)+1);
                 if (Map == 1) {
                     for (i = 0; i < map1x.length; i++) {
                         Bricks.add(new Brick(map1x[i], map1y[i]));
                     }
-                } else if (Map == 2) {
+                } else {
                     for (i = 0; i < map2x.length; i++) {
                         Bricks.add(new Brick(map2x[i], map2y[i]));
-                    }
-                } else {
-                    for (i = 0; i < map3x.length; i++) {
-                        Bricks.add(new Brick(map3x[i], map3y[i]));
                     }
                 }
                 R=5.5+Level*0.25;
@@ -310,7 +344,7 @@ public class GAME extends Canvas implements Runnable {
                    ballSpawnRandomDirection();
                    ballSpawnRandomDirection();
                 } else {
-                    if (ScoreMuli!=16) {
+                    if (ScoreMuli!=64) {
                         ScoreMuli *= 2;
                     }
                 }
@@ -381,6 +415,40 @@ public class GAME extends Canvas implements Runnable {
         ballReady=false;
     }
 
+    private ArrayList<Integer> getHigh(){
+        ArrayList<Integer> highscores = new ArrayList<>();
+        try{
+            File Higscores = new File("Highscore.txt");
+            Scanner filereader = new Scanner(Higscores);
+            while (filereader.hasNextLine()){
+                highscores.add(filereader.nextInt());
+            }
+        } catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+        return highscores;
+    }
+
+    private void newHigh() {
+        ArrayList<Integer> scores =  getHigh();
+        scores.add(Score);
+        Collections.sort(scores);
+        try {
+            FileWriter Writer = new FileWriter("Highscore.txt");
+            for (i = scores.size()-1; i>0;i--) {
+                if (1!=i) {
+                    Writer.write(scores.get(i)+"\n");
+                } else {
+                    Writer.write(scores.get(i)+"");
+                }
+            }
+            Writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void drawBrick(Graphics g, int x, int y, Color C) {
         g.setColor(C.darker());
         g.fillRect(x,y,60,20);
@@ -417,22 +485,59 @@ public class GAME extends Canvas implements Runnable {
             g.fillOval(x+6,y+10,8,8);
         } else if (P==1) {
             //speed up
-
+            g.fillRect(x+4,y+8,12,4);
+            g.fillRect(x+8,y+4,4,12);
         } else if (P==2) {
             //speed down
-
+            g.fillRect(x+4,y+8,12,4);
         }  else if (P==3) {
             //platsize down
-            g.fillRect(x+2,y+8,6,4);
         }  else if (P==4) {
             //platsize up
-            g.fillRect(x+3,y+8,6,4);
-
         } else {
             g.setFont(new Font("Comic Sans MS", Font.BOLD, 12));
             g.drawString("X2",x+2,y+14);
 
         }
+    }
+
+    private void drawPowerList(Graphics g, int x, int y) {
+        g.setFont(new Font("Monospaced", Font.BOLD, 18));
+        g.setColor(new Color(250, 4, 4));
+        g.fillRect(x,y,20,20);
+        g.setColor(new Color(250, 4, 4).darker());
+        g.fillRect(x+2, y+2, 16, 16);
+        g.drawString("Speed Up", x+25,y+15);
+
+        g.setColor(new Color(200, 100, 4));
+        g.fillRect(x,y+60,20,20);
+        g.setColor(new Color(200, 100, 4).darker());
+        g.fillRect(x+2, y+62, 16, 16);
+        g.drawString("Speed Down", x+25,y+75);
+
+        g.setColor(new Color(0, 100, 4));
+        g.fillRect(x,y+120,20,20);
+        g.setColor(new Color(0, 100, 4).darker());
+        g.fillRect(x+2, y+122, 16, 16);
+        g.drawString("Size Down", x+25,y+135);
+
+        g.setColor(new Color(4, 150, 100));
+        g.fillRect(x,y+180,20,20);
+        g.setColor(new Color(4, 150, 100).darker());
+        g.fillRect(x+2, y+182, 16, 16);
+        g.drawString("Size Up", x+25,y+195);
+
+        g.setColor(new Color(100,100,255));
+        g.fillRect(x,y+240,20,20);
+        g.setColor(new Color(100,100,255).darker());
+        g.fillRect(x+2, y+242, 16, 16);
+        g.drawString("More Balls", x+25,y+255);
+
+        g.setColor(new Color(180, 0,255));
+        g.fillRect(x,y+300,20,20);
+        g.setColor(new Color(180, 0,255).darker());
+        g.fillRect(x+2, y+302, 16, 16);
+        g.drawString("Score Up", x+25,y+315);
     }
 
     private void Reset() {
@@ -446,22 +551,19 @@ public class GAME extends Canvas implements Runnable {
         Powups.clear();
         ResetAtrb();
         Level = 1;
-        Lives = 2;
+        Lives = 2;  //Must be above 0
         ballReady = true;
         platformx = (1366/2);
+        Score = 0;
 
-        Map = (int) ((Math.random()*3)+1);
+        Map = (int) ((Math.random()*2)+1);
         if (Map == 1) {
             for (i = 0; i < map1x.length; i++) {
                 Bricks.add(new Brick(map1x[i], map1y[i]));
             }
-        } else if (Map == 2) {
+        } else {
             for (i = 0; i < map2x.length; i++) {
                 Bricks.add(new Brick(map2x[i], map2y[i]));
-            }
-        } else {
-            for (i = 0; i < map3x.length; i++) {
-                Bricks.add(new Brick(map3x[i], map3y[i]));
             }
         }
     }
@@ -538,12 +640,11 @@ public class GAME extends Canvas implements Runnable {
             }
 
             if (e.getKeyChar() == 'b' || e.getKeyChar() == 'B') {
-                for (i=0; i<2000; i++) {
-                    ballSpawnRandomDirection();
-                    ballSpawnRandomDirection();
+                for (i=0; i<500; i++) {
                     ballSpawnRandomDirection();
                 }
             }
+
         }
 
         @Override
