@@ -39,8 +39,6 @@ public class GAME extends Canvas implements Runnable {
     private final int[] map1y = {200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,200,230,260,290,320,};
     private final int[] map2x = { 210, 210, 210, 210, 210, 210, 210, 350, 350, 350, 350, 350, 350, 350, 420, 420, 420, 420, 420, 420, 420, 490, 490, 490, 490, 490, 490, 490, 560, 560, 560, 560, 560, 560, 560, 630, 630, 630, 630, 630, 630, 630, 700, 700, 700, 700, 700, 700, 700, 770, 770, 770, 770, 770, 770, 770, 980, 980, 980, 980, 980, 980, 980, 840, 840, 840, 840, 840, 840, 840,};
     private final int[] map2y = { 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320, 140, 170, 200, 230, 260, 290, 320,};
-    private final int[] map3x = {210, 210};
-    private final int[] map3y = {200, 230};
     private double R; //ball speed value
 
 
@@ -82,7 +80,7 @@ public class GAME extends Canvas implements Runnable {
                             i = Bricks.size() + 1;
                         }
                     } //Ball Hits bricks and might summon power upp
-                }
+                }//Checks if the ball has hit a brick and destroys the brick and summons a powerup. also changes the direction of tha ball in the X axis
 
                 Balls.get(b).Y += Balls.get(b).getYv();
                 if (Balls.get(b).getY() < 370) {
@@ -102,7 +100,7 @@ public class GAME extends Canvas implements Runnable {
                             i = Bricks.size() + 1;
                         }
                     }
-                }//Ball Hits bricks and might summon power upp
+                }//Checks if the ball has hit a brick and destroys the brick and summons a powerup. also changes the direction of tha ball in the Y axis
 
 
                 ballHitWalls();
@@ -308,7 +306,7 @@ public class GAME extends Canvas implements Runnable {
             }
 
         }
-    }
+    } //Waits 2 seconds then spawns new bricks
 
     private void powerCheckHit(Rectangle rect2) {
         if (Powups.size()>0) {
@@ -413,7 +411,8 @@ public class GAME extends Canvas implements Runnable {
         Balls.add(new Ball(platformx-5,610, xv, -1*(R*Math.sin(Angle))));
 
         ballReady=false;
-    }
+    } //if the ball is ready, this fires the ball, used at the start of the game, at a new map, and when u lose a ball
+
 
     private ArrayList<Integer> getHigh(){
         ArrayList<Integer> highscores = new ArrayList<>();
@@ -427,8 +426,7 @@ public class GAME extends Canvas implements Runnable {
             e.printStackTrace();
         }
         return highscores;
-    }
-
+    } //Used to get an arraylist of all the highscores from the Highscore.txt file. Adam helped me with this but I did do some ground work before asking for his help
     private void newHigh() {
         ArrayList<Integer> scores =  getHigh();
         scores.add(Score);
@@ -447,14 +445,15 @@ public class GAME extends Canvas implements Runnable {
             e.printStackTrace();
         }
 
-    }
+    } //Used to set the current score in the Highscore.txt file if its high enough
+
 
     private void drawBrick(Graphics g, int x, int y, Color C) {
         g.setColor(C.darker());
         g.fillRect(x,y,60,20);
         g.setColor(C);
         g.fillRect(x+3,y+3,54, 14);
-    }
+    } //Draws all the bricks with their corresponding color
 
     private void drawHeart(Graphics g, int x, int y) {
         if (Lives==1) {
@@ -471,7 +470,7 @@ public class GAME extends Canvas implements Runnable {
         int[] X = {x, x+45, x+90};
         int[] Y = {y+25, y+100, y+25};
         g.fillPolygon(X,Y,3);
-    }
+    } //Draws the wonky heart that changes color depending on your amount of lives
 
     private void drawPower(Graphics g, int x, int y, Color C, int P) {
         g.setColor(C);
@@ -499,7 +498,7 @@ public class GAME extends Canvas implements Runnable {
             g.drawString("X2",x+2,y+14);
 
         }
-    }
+    } //Draw the powerups that drops from the bricks
 
     private void drawPowerList(Graphics g, int x, int y) {
         g.setFont(new Font("Monospaced", Font.BOLD, 18));
@@ -538,7 +537,7 @@ public class GAME extends Canvas implements Runnable {
         g.setColor(new Color(180, 0,255).darker());
         g.fillRect(x+2, y+302, 16, 16);
         g.drawString("Score Up", x+25,y+315);
-    }
+    } //Draws the list of powers to the rigt
 
     private void Reset() {
         a=true;
@@ -566,14 +565,14 @@ public class GAME extends Canvas implements Runnable {
                 Bricks.add(new Brick(map2x[i], map2y[i]));
             }
         }
-    }
+    } //Used to put all values to standard att the start of the game and when you restart
 
     private void ResetAtrb() {
         speedmodifier = 1;
         platformsize = 25;
         newBrickssWait = 0;
         ScoreMuli=1;
-    }
+    } //Resets atributes that gets modefied by powerups
 
 
 
@@ -620,30 +619,24 @@ public class GAME extends Canvas implements Runnable {
                     platformspeed+=-4;
                     a=false;
                 }
-            }
+            } //Move left
             if (e.getKeyChar() == 'd' || e.getKeyChar() == 'D') {
                 if (d) {
                     platformspeed+=4;
                     d=false;
                 }
-            }
+            } //Move right
             if (e.getKeyChar() == ' ') {
                 if (ballReady) {
                     shotBall();
                 }
-            }
-
+            } //Shotball if its ready
             if (e.getKeyChar() == 'r' || e.getKeyChar() == 'R') {
                 if (Lives<=0) {
                     Reset();
                 }
-            }
+            } //Restart
 
-            if (e.getKeyChar() == 'b' || e.getKeyChar() == 'B') {
-                for (i=0; i<500; i++) {
-                    ballSpawnRandomDirection();
-                }
-            }
 
         }
 
