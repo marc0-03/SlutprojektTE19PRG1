@@ -194,8 +194,8 @@ public class GAME extends Canvas implements Runnable {
         }
 
 
-        drawHeart(g,1100,60);
-        drawPowerList(g,1080, 220);
+        drawHeart(g);
+        drawPowerList(g);
 
         g.setColor(Color.white);
         g.fillRect(platformx-platformsize, 625, platformsize*2, 10);
@@ -393,7 +393,7 @@ public class GAME extends Canvas implements Runnable {
 
     private void shotBall() {
         Angle = Math.toRadians((Math.random()*50)+25);
-        Double xv;
+        double xv;
 
         if (platformspeed > 0) {
             xv = (R * Math.cos(Angle));
@@ -455,7 +455,7 @@ public class GAME extends Canvas implements Runnable {
         g.fillRect(x+3,y+3,54, 14);
     } //Draws all the bricks with their corresponding color
 
-    private void drawHeart(Graphics g, int x, int y) {
+    private void drawHeart(Graphics g) {
         if (Lives==1) {
             g.setColor(Color.darkGray);
         } else if (Lives==2) {
@@ -465,10 +465,10 @@ public class GAME extends Canvas implements Runnable {
         } else {
             g.setColor(new Color(30,30,30));
         }
-        g.fillOval(x,y,50,50);
-        g.fillOval(x+40,y,50,50);
-        int[] X = {x, x+45, x+90};
-        int[] Y = {y+25, y+100, y+25};
+        g.fillOval(1100, 60,50,50);
+        g.fillOval(1100 +40, 60,50,50);
+        int[] X = {1100, 1100 +45, 1100 +90};
+        int[] Y = {60 +25, 60 +100, 60 +25};
         g.fillPolygon(X,Y,3);
     } //Draws the wonky heart that changes color depending on your amount of lives
 
@@ -489,54 +489,50 @@ public class GAME extends Canvas implements Runnable {
         } else if (P==2) {
             //speed down
             g.fillRect(x+4,y+8,12,4);
-        }  else if (P==3) {
-            //platsize down
-        }  else if (P==4) {
-            //platsize up
-        } else {
+        } else if (P!=4 && P!=3){
             g.setFont(new Font("Comic Sans MS", Font.BOLD, 12));
             g.drawString("X2",x+2,y+14);
 
         }
     } //Draw the powerups that drops from the bricks
 
-    private void drawPowerList(Graphics g, int x, int y) {
+    private void drawPowerList(Graphics g) {
         g.setFont(new Font("Monospaced", Font.BOLD, 18));
         g.setColor(new Color(250, 4, 4));
-        g.fillRect(x,y,20,20);
+        g.fillRect(1080, 220,20,20);
         g.setColor(new Color(250, 4, 4).darker());
-        g.fillRect(x+2, y+2, 16, 16);
-        g.drawString("Speed Up", x+25,y+15);
+        g.fillRect(1080 +2, 220 +2, 16, 16);
+        g.drawString("Speed Up", 1080 +25, 220 +15);
 
         g.setColor(new Color(200, 100, 4));
-        g.fillRect(x,y+60,20,20);
+        g.fillRect(1080, 220 +60,20,20);
         g.setColor(new Color(200, 100, 4).darker());
-        g.fillRect(x+2, y+62, 16, 16);
-        g.drawString("Speed Down", x+25,y+75);
+        g.fillRect(1080 +2, 220 +62, 16, 16);
+        g.drawString("Speed Down", 1080 +25, 220 +75);
 
         g.setColor(new Color(0, 100, 4));
-        g.fillRect(x,y+120,20,20);
+        g.fillRect(1080, 220 +120,20,20);
         g.setColor(new Color(0, 100, 4).darker());
-        g.fillRect(x+2, y+122, 16, 16);
-        g.drawString("Size Down", x+25,y+135);
+        g.fillRect(1080 +2, 220 +122, 16, 16);
+        g.drawString("Size Down", 1080 +25, 220 +135);
 
         g.setColor(new Color(4, 150, 100));
-        g.fillRect(x,y+180,20,20);
+        g.fillRect(1080, 220 +180,20,20);
         g.setColor(new Color(4, 150, 100).darker());
-        g.fillRect(x+2, y+182, 16, 16);
-        g.drawString("Size Up", x+25,y+195);
+        g.fillRect(1080 +2, 220 +182, 16, 16);
+        g.drawString("Size Up", 1080 +25, 220 +195);
 
         g.setColor(new Color(100,100,255));
-        g.fillRect(x,y+240,20,20);
+        g.fillRect(1080, 220 +240,20,20);
         g.setColor(new Color(100,100,255).darker());
-        g.fillRect(x+2, y+242, 16, 16);
-        g.drawString("More Balls", x+25,y+255);
+        g.fillRect(1080 +2, 220 +242, 16, 16);
+        g.drawString("More Balls", 1080 +25, 220 +255);
 
         g.setColor(new Color(180, 0,255));
-        g.fillRect(x,y+300,20,20);
+        g.fillRect(1080, 220 +300,20,20);
         g.setColor(new Color(180, 0,255).darker());
-        g.fillRect(x+2, y+302, 16, 16);
-        g.drawString("Score Up", x+25,y+315);
+        g.fillRect(1080 +2, 220 +302, 16, 16);
+        g.drawString("Score Up", 1080 +25, 220 +315);
     } //Draws the list of powers to the rigt
 
     private void Reset() {
@@ -644,11 +640,7 @@ public class GAME extends Canvas implements Runnable {
         public void keyPressed(KeyEvent e) {
             if (e.getKeyChar() == 'p' || e.getKeyChar() == 'P') {
                 if (Lives!=0) {
-                    if (paused) {
-                        paused = false;
-                    } else {
-                        paused = true;
-                    }
+                    paused = !paused;
                 }
             }
         }
